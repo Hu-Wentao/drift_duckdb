@@ -1,7 +1,12 @@
+import 'package:dart_duckdb/dart_duckdb.dart';
+import 'package:dart_duckdb/open.dart';
 import 'package:drift/drift.dart';
 import 'package:drift_duckdb/drift_duckdb.dart';
 
 void main() async {
+  // use for homebrew duckdb
+  open.overrideFor(OperatingSystem.macOS, '/opt/homebrew/lib/libduckdb.dylib');
+
   // Use an in-memory database
   final executor = DuckdbQueryExecutor.inMemory(logStatements: true);
 
@@ -28,7 +33,10 @@ void main() async {
 
 class _User extends QueryExecutorUser {
   @override
-  Future<void> beforeOpen(QueryExecutor executor, OpeningDetails details) async {}
+  Future<void> beforeOpen(
+    QueryExecutor executor,
+    OpeningDetails details,
+  ) async {}
 
   @override
   int get schemaVersion => 1;
