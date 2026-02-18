@@ -1,0 +1,20 @@
+{
+    "workbench.editorAssociations": {
+        "*.copilotmd": "vscode.markdown.preview.editor",
+        "{git,gitlens,conflictResolution,vscode-local-history}:/**/*.tc.json": "default",
+        "*.plist": "default",
+        "*.md": "default",
+        "*.parquet": "duckdb.dataFileViewer",
+        "*.csv": "duckdb.dataFileViewer",
+        "*.tsv": "duckdb.dataFileViewer"
+    },
+//   // 全局搜索时排除 docs 文件夹
+//   "search.exclude": {
+//     "**/docs/**": true
+//   },
+  // 减少 VS Code 对 docs 文件夹的文件监听（优化性能）
+//   "files.watcherExclude": {
+//     "**/docs/**": true
+//   },
+
+}
