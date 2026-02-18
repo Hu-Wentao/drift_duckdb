@@ -1,39 +1,48 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# drift_duckdb
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages). 
+A [Drift](https://drift.simonbinder.eu/) database implementation for [DuckDB](https://duckdb.org/).
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages). 
--->
+This package allows you to use DuckDB as a backend for your Drift databases in Dart and Flutter applications.
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+[简体中文](./README_ZH.md)
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- **Drift Backend**: Seamlessly integrate DuckDB with the Drift ORM.
+- **In-Memory & File-Based**: Supports both `:memory:` and local file storage.
+- **Schema Versioning**: Built-in support for Drift's schema versioning.
+- **Batched Statements**: Supports running multiple statements in a transaction.
 
 ## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+Add `drift_duckdb` to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  drift_duckdb: any
+  drift: ^2.31.0
+  dart_duckdb: ^1.4.4
+```
+
+Make sure you have the DuckDB dynamic library available on your system. For macOS users using Homebrew:
+```dart
+import 'package:dart_duckdb/open.dart';
+// ...
+open.overrideFor(OperatingSystem.macOS, '/opt/homebrew/lib/libduckdb.dylib');
+```
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
-
 ```dart
-const like = 'sample';
+import 'package:drift/drift.dart';
+import 'package:drift_duckdb/drift_duckdb.dart';
+
+// Use an in-memory database
+final executor = DuckdbQueryExecutor.inMemory();
+
+// Or use a file-based database
+// final executor = DuckdbQueryExecutor('path/to/my_database.db');
+
+// Use it with your Drift database class
+// final database = MyDriftDatabase(executor);
 ```
-
-## Additional information
-
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
