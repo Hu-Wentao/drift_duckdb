@@ -1,5 +1,5 @@
 name: drift_duckdb
-description: A starting point for Dart libraries or applications.
+description: A drift database implementation for DuckDB, allowing you to use DuckDB as a backend for drift.
 version: 0.0.1
 repository: https://github.com/Hu-Wentao/drift_duckdb
 
