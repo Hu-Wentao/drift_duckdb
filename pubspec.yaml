@@ -19,5 +19,7 @@ dependencies:
   drift: ^2.31.0
 
 dev_dependencies:
+  build_runner: ^2.11.1
+  drift_dev: ^2.31.0
   lints: ^6.0.0
   test: ^1.25.6
