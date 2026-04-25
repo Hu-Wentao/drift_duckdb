@@ -10,6 +10,7 @@ This package allows you to use DuckDB as a backend for your Drift databases in D
 
 - **Drift Backend**: Seamlessly integrate DuckDB with the Drift ORM.
 - **In-Memory & File-Based**: Supports both `:memory:` and local file storage.
+- **Encrypted Databases**: Supports opening encrypted DuckDB files with an explicit encryption key.
 - **Schema Versioning**: Built-in support for Drift's schema versioning.
 - **Batched Statements**: Supports running multiple statements in a transaction.
 
@@ -43,6 +44,35 @@ final executor = DuckdbQueryExecutor.inMemory();
 // Or use a file-based database
 // final executor = DuckdbQueryExecutor('path/to/my_database.db');
 
+// Or open an encrypted DuckDB database
+// final executor = DuckdbQueryExecutor(
+//   'path/to/secure.duckdb',
+//   encryption: const DuckdbEncryptionOptions(
+//     key: 'replace-with-a-real-secret',
+//   ),
+// );
+
 // Use it with your Drift database class
 // final database = MyDriftDatabase(executor);
 ```
+
+## Encrypted databases
+
+DuckDB encryption is only available for file-based databases, so
+`DuckdbQueryExecutor.inMemory()` does not accept encryption options.
+
+```dart
+final executor = DuckdbQueryExecutor(
+  'path/to/secure.duckdb',
+  encryption: const DuckdbEncryptionOptions(
+    key: 'replace-with-a-real-secret',
+    cipher: DuckdbEncryptionCipher.gcm,
+  ),
+);
+```
+
+Notes:
+
+- This package opens encrypted databases by attaching the target file and then `USE`-ing it, so existing Drift SQL continues to work without schema qualification.
+- The linked DuckDB native library must support encrypted storage. DuckDB 1.4+ is recommended.
+- `LOAD httpfs` is **not** enabled automatically. If your deployment depends on the OpenSSL-backed implementation DuckDB documents for encryption performance, pass `loadHttpfs: true` explicitly to avoid hidden compatibility changes.

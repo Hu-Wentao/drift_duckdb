@@ -6,13 +6,59 @@ import 'dart:async';
 import 'package:dart_duckdb/dart_duckdb.dart';
 import 'package:drift/backends.dart';
 
+/// The cipher used when encrypting a DuckDB database.
+enum DuckdbEncryptionCipher {
+  gcm('GCM'),
+  cbc('CBC'),
+  ctr('CTR');
+
+  const DuckdbEncryptionCipher(this.sqlName);
+
+  final String sqlName;
+}
+
+/// Encryption options for file-based DuckDB databases.
+final class DuckdbEncryptionOptions {
+  /// Creates encryption options for an attached DuckDB database.
+  const DuckdbEncryptionOptions({
+    required this.key,
+    this.cipher = DuckdbEncryptionCipher.gcm,
+    this.loadHttpfs = false,
+    this.attachedDatabaseAlias = 'drift_duckdb_encrypted',
+  });
+
+  /// The encryption key used by DuckDB.
+  final String key;
+
+  /// The AES cipher mode used by DuckDB.
+  final DuckdbEncryptionCipher cipher;
+
+  /// Whether to attempt `LOAD httpfs` before attaching the encrypted database.
+  ///
+  /// DuckDB documents that loading `httpfs` can improve encryption performance
+  /// by enabling OpenSSL-backed implementations.
+  final bool loadHttpfs;
+
+  /// The alias assigned to the attached encrypted database.
+  final String attachedDatabaseAlias;
+}
+
 class _DuckdbDelegate extends DatabaseDelegate {
   final String path;
+  final Map<String, String>? settings;
+  final DuckdbEncryptionOptions? encryptionOptions;
   Database? db;
   Connection? conn;
   bool _isOpen = false;
 
-  _DuckdbDelegate(this.path);
+  _DuckdbDelegate(this.path, {this.settings, this.encryptionOptions}) {
+    if (path == ':memory:' && encryptionOptions != null) {
+      throw ArgumentError(
+        'Encrypted databases require a file path and are not supported with '
+        'DuckdbQueryExecutor.inMemory().',
+      );
+    }
+  }
 
   @override
   late final DbVersionDelegate versionDelegate = _DuckdbVersionDelegate(this);
@@ -25,8 +71,27 @@ class _DuckdbDelegate extends DatabaseDelegate {
 
   @override
   Future<void> open(QueryExecutorUser user) async {
-    db = await duckdb.open(path);
-    conn = await duckdb.connect(db!);
+    if (encryptionOptions case final options?) {
+      db = await duckdb.open(':memory:', settings: settings);
+      conn = await duckdb.connect(db!);
+
+      if (options.loadHttpfs) {
+        await conn!.execute('LOAD httpfs');
+      }
+
+      final attachStatement =
+          'ATTACH ${_sqlStringLiteral(path)} AS '
+          '${_sqlIdentifier(options.attachedDatabaseAlias)} '
+          '(ENCRYPTION_KEY ${_sqlStringLiteral(options.key)}, '
+          'ENCRYPTION_CIPHER ${_sqlStringLiteral(options.cipher.sqlName)})';
+      await conn!.execute(attachStatement);
+      await conn!.execute(
+        'USE ${_sqlIdentifier(options.attachedDatabaseAlias)}',
+      );
+    } else {
+      db = await duckdb.open(path, settings: settings);
+      conn = await duckdb.connect(db!);
+    }
     _isOpen = true;
   }
 
@@ -116,6 +181,14 @@ class _DuckdbDelegate extends DatabaseDelegate {
       rethrow;
     }
   }
+
+  static String _sqlStringLiteral(String value) {
+    return "'${value.replaceAll("'", "''")}'";
+  }
+
+  static String _sqlIdentifier(String value) {
+    return '"${value.replaceAll('"', '""')}"';
+  }
 }
 
 class _DuckdbVersionDelegate extends DynamicVersionDelegate {
@@ -165,12 +238,28 @@ class DuckdbQueryExecutor extends DelegatedDatabase {
   /// Creates a query executor that will store the database in the file at [path].
   ///
   /// If [logStatements] is true, queries will be printed to the console.
-  DuckdbQueryExecutor(String path, {bool? logStatements})
-    : super(_DuckdbDelegate(path), logStatements: logStatements);
+  DuckdbQueryExecutor(
+    String path, {
+    bool? logStatements,
+    Map<String, String>? settings,
+    DuckdbEncryptionOptions? encryption,
+  }) : super(
+         _DuckdbDelegate(
+           path,
+           settings: settings,
+           encryptionOptions: encryption,
+         ),
+         logStatements: logStatements,
+       );
 
   /// Creates a query executor that will use an in-memory DuckDB database.
-  DuckdbQueryExecutor.inMemory({bool? logStatements})
-    : super(_DuckdbDelegate(':memory:'), logStatements: logStatements);
+  DuckdbQueryExecutor.inMemory({
+    bool? logStatements,
+    Map<String, String>? settings,
+  }) : super(
+         _DuckdbDelegate(':memory:', settings: settings),
+         logStatements: logStatements,
+       );
 
   /// The underlying [Database] object used by this executor.
   ///
