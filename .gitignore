@@ -15,3 +15,7 @@ DEV.md
 MEMO.md
 data/
 .gitignore
+
+# FVM Version Cache
+.fvm/
+.flutter-plugins-dependencies
