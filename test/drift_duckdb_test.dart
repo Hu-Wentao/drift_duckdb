@@ -38,6 +38,10 @@ void main() {
       expect(executor.connection, isNotNull);
     });
 
+    test('reports the DuckDB dialect', () {
+      expect(executor.dialect, SqlDialect.duckdb);
+    });
+
     test('can execute queries', () async {
       await executor.ensureOpen(_User());
       await executor.runCustom('CREATE TABLE test (id INTEGER)', []);

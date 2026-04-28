@@ -21,7 +21,7 @@ Add `drift_duckdb` to your `pubspec.yaml`:
 ```yaml
 dependencies:
   drift_duckdb: any
-  drift: ^2.31.0
+  drift: your-local-version-with-duckdb-dialect
   dart_duckdb: ^1.4.4
 ```
 
@@ -54,6 +54,19 @@ final executor = DuckdbQueryExecutor.inMemory();
 
 // Use it with your Drift database class
 // final database = MyDriftDatabase(executor);
+```
+
+With a Drift version that already supports the DuckDB dialect, Drift's standard
+column builders now generate DuckDB-aware SQL through `DuckdbQueryExecutor`:
+
+```dart
+import 'package:drift/drift.dart';
+import 'package:drift_duckdb/drift_duckdb.dart';
+
+class Events extends Table {
+  IntColumn get id => integer()();
+  Column<BigInt> get externalId => int64()();
+}
 ```
 
 ## Encrypted databases

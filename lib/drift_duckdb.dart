@@ -278,5 +278,8 @@ class DuckdbQueryExecutor extends DelegatedDatabase {
   }
 
   @override
+  SqlDialect get dialect => SqlDialect.duckdb;
+
+  @override
   bool get isSequential => true;
 }
