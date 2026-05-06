@@ -21,7 +21,7 @@
 ```yaml
 dependencies:
   drift_duckdb: any
-  drift: ^2.31.0
+  drift: >2.31.* #支持 DuckDB dialect 的版本
   dart_duckdb: ^1.4.4
 ```
 
@@ -54,6 +54,19 @@ final executor = DuckdbQueryExecutor.inMemory();
 
 // 在您的 Drift 数据库类中使用它
 // final database = MyDriftDatabase(executor);
+```
+
+当您使用的 Drift 版本已经原生支持 DuckDB dialect 后，
+`DuckdbQueryExecutor` 会让 Drift 的标准列构造器直接生成 DuckDB 语义的 SQL：
+
+```dart
+import 'package:drift/drift.dart';
+import 'package:drift_duckdb/drift_duckdb.dart';
+
+class Events extends Table {
+  IntColumn get id => integer()();
+  Column<BigInt> get externalId => int64()();
+}
 ```
 
 ## 加密数据库
