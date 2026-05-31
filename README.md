@@ -17,6 +17,9 @@ This package allows you to use DuckDB as a backend for your Drift databases in D
 ## Getting started
 
 Add `drift_duckdb` to your `pubspec.yaml`:
+```bash
+dart pub add drift_duckdb
+```
 
 ```yaml
 dependencies:
