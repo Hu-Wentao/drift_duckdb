@@ -24,7 +24,7 @@ dart pub add drift_duckdb
 ```yaml
 dependencies:
   drift_duckdb: any
-  drift: your-local-version-with-duckdb-dialect
+  drift: ^2.33.0
   dart_duckdb: ^1.4.4
 ```
 
